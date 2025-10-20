@@ -9,11 +9,13 @@ import {
   verifyUserEmail,
   verifyResetOTP,
 } from "../controlllers/authController.ts";
+import { validateBody } from "../middleware/schemaValidation.ts";
+import { loginSchema, registerSchema } from "../validation/authSchema.ts";
 
 const authRouter = Router();
 
-authRouter.post("/create-user", createUser);
-authRouter.post("/login", loginUser);
+authRouter.post("/create-user", validateBody(registerSchema), createUser);
+authRouter.post("/login", validateBody(loginSchema), loginUser);
 authRouter.post("/logout", logoutUser);
 authRouter.get("/refresh", refreshAccessToken);
 authRouter.post("/verify-email", verifyUserEmail);
