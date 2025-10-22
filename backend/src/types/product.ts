@@ -33,8 +33,17 @@ export interface IProduct extends Document {
   isLowStock: boolean;
 
   hasSufficientStock(quantity: number): boolean;
-  findLowStock(): Promise<IProduct[]>;
   reserveInventory(quantity: number): Promise<void>;
   releaseInventory(quantity: number): Promise<void>;
   deductInventory(quantity: number): Promise<void>;
+}
+
+export interface IProductFormData {
+  name: string;
+  description: string;
+  price: string;
+  category: string;
+  quantity: string;
+  reserved: string;
+  lowStockThreshold: string;
 }

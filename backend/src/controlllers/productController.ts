@@ -1,6 +1,10 @@
 import type { Request, Response, NextFunction } from "express";
 import Product from "../models/productModel.ts";
-import type { IProduct } from "../types/product.ts";
+import type {
+  IProduct,
+  IProductFormData,
+  IProductImage,
+} from "../types/product.ts";
 import { Types } from "mongoose";
 import CloudinaryService from "../services/cloudinaryService.ts";
 
@@ -101,12 +105,29 @@ export class ProductController {
    * Create new product (Admin only)
    */
   static async createProduct(
-    req: Request<{}, {}, IProduct>,
+    req: Request<{}, {}, IProductFormData>,
     res: Response,
     next: NextFunction
   ): Promise<void> {
+    let uploadedImages: IProductImage[] = []; // Track uploaded images for cleanup
+
     try {
-      const { name, description, price, category, inventory } = req.body;
+      const {
+        name,
+        description,
+        price,
+        category,
+        quantity,
+        reserved,
+        lowStockThreshold,
+      } = req.body;
+
+      // Reconstruct inventory object from flattened fields
+      const inventory = {
+        quantity: parseInt(quantity),
+        reserved: 0,
+        lowStockThreshold: parseInt(lowStockThreshold) || 10,
+      };
 
       // Get uploaded files
       const files = req.files as Express.Multer.File[];
@@ -123,12 +144,14 @@ export class ProductController {
       const productId = new Types.ObjectId().toString();
 
       // Upload images to Cloudinary with the pre-generated product ID
-      const uploadedImages =
-        await CloudinaryService.uploadMultipleProductImages(files, productId);
+      uploadedImages = await CloudinaryService.uploadMultipleProductImages(
+        files,
+        productId
+      );
 
       // Now create the product with the images and specific ID
       const product = await Product.create({
-        _id: productId, // Use the pre-generated ID
+        _id: productId,
         name,
         description,
         price,
@@ -143,12 +166,36 @@ export class ProductController {
         data: product,
       });
     } catch (error) {
-      // Cleanup: Delete uploaded images if product creation fails
-      if (error instanceof Error) {
-        // Extract public_ids from uploaded images and delete them
-        // This is a safety measure
+      // Cleanup logic
+      try {
+        // 1. Delete local files (if they still exist)
+        if (req.files) {
+          const files = req.files as Express.Multer.File[];
+          files.forEach((file) => {
+            CloudinaryService.deleteLocalFile(file.path);
+          });
+        }
+
+        // 2. Delete uploaded images from Cloudinary (if upload succeeded)
+        if (uploadedImages.length > 0) {
+          const publicIds = uploadedImages.map((img) => img.public_id);
+          await CloudinaryService.deleteMultipleImages(publicIds);
+          console.log(`Cleaned up ${publicIds.length} images from Cloudinary`);
+        }
+      } catch (cleanupError) {
+        // Log cleanup errors but don't throw them
+        console.error("Error during cleanup:", cleanupError);
       }
+
       next(error);
+    } finally {
+      // Always attempt to delete local files
+      if (req.files) {
+        const files = req.files as Express.Multer.File[];
+        files.forEach((file) => {
+          CloudinaryService.deleteLocalFile(file.path);
+        });
+      }
     }
   }
 
@@ -248,9 +295,9 @@ export class ProductController {
   }
 
   /**
-   * Delete product (soft delete - set isActive to false)
+   * deactivateproduct product (soft delete - set isActive to false)
    */
-  static async deleteProduct(
+  static async deactivateProduct(
     req: Request,
     res: Response,
     next: NextFunction
@@ -328,7 +375,7 @@ export class ProductController {
    * Get low stock products (Admin only)
    */
   static async getLowStockProducts(
-    req: Request,
+    _: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> {

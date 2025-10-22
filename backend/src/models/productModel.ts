@@ -1,4 +1,4 @@
-import mongoose, { Schema, Model } from "mongoose";
+import mongoose, { Model, Schema } from "mongoose";
 
 import type { IInventory, IProduct, IProductImage } from "../types/product.ts";
 import { generateSlug } from "../utils/generateSlug.ts";
@@ -131,7 +131,6 @@ productSchema.virtual("isLowStock").get(function (this: IProduct) {
 // Indexes for performance
 productSchema.index({ name: "text" }); // Text search
 productSchema.index({ category: 1, price: 1 }); // Filter by category and sort by price
-// productSchema.index({ slug: true }); // Fast slug lookup
 productSchema.index({ isActive: 1 }); // Filter active products
 productSchema.index({ "inventory.quantity": 1 }); // Stock queries
 
