@@ -10,15 +10,18 @@ import { errorHandler, notFound } from "./middleware/errorMiddleware.ts";
 import { protect } from "./middleware/authMiddleware.ts";
 import authRouter from "./routes/authRoutes.ts";
 import userRouter from "./routes/userRoutes.ts";
+import productRoutes from "./routes/productRoute.ts";
 
 const app = express();
 const PORT = 3000;
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use("/api/auth", authRouter);
 app.use("/api/user", protect, userRouter);
+app.use("/api/product", productRoutes);
 app.get("/", (_: Request, res: Response, next: NextFunction) => {
   res.send("Hello World!");
   next();
