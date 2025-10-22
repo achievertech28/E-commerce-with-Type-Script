@@ -8,7 +8,6 @@ function Layout() {
   return (
     <>
       <Navbar />
-      <Outlet />
       <Footer />
     </>
   );
@@ -27,9 +26,6 @@ function App() {
             </>
           }
         />
-        {/* Example: you can add more pages below */}
-        {/* <Route path="/shop" element={<ShopPage />} /> */}
-        {/* <Route path="/contact" element={<ContactPage />} /> */}
       </Route>
     </Routes>
   );

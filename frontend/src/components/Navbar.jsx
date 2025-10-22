@@ -10,7 +10,7 @@ const Navbar = () => {
   const [showSearch, setShowSearch] = useState(false);
   return (
     <>
-      <div className="flex items-center px-8 md:px-20 justify-between p-4 shadow-md bg-white">
+      <div className="flex items-center px-2 md:px-20 md:justify-between justify-start gap-7 md:gap-0 p-4 shadow-md bg-white">
         <div className="flex items-center gap-3">
           {/* menu on small screen size */}
           <div className="lg:hidden">
@@ -63,7 +63,7 @@ const Navbar = () => {
           </ul>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center md:gap-4 gap-2">
           {/* search bar desktop */}
           <div className="relative hidden md:flex">
             <input
