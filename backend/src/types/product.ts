@@ -1,4 +1,5 @@
-import { Document } from "mongoose";
+import mongoose, { Document } from "mongoose";
+import type { ICategory } from "../models/categoryModel.ts";
 
 export interface IInventory {
   quantity: number;
@@ -21,7 +22,7 @@ export interface IProduct extends Document {
   slug: string;
   description: string;
   price: number;
-  category: string;
+  category: mongoose.Types.ObjectId | ICategory;
   images: IProductImage[];
   isActive: boolean;
   inventory: IInventory;

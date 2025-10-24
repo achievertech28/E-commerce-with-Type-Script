@@ -7,6 +7,7 @@ import type {
 } from "../types/product.ts";
 import { Types } from "mongoose";
 import CloudinaryService from "../services/cloudinaryService.ts";
+import Category from "../models/categoryModel.ts";
 
 export class ProductController {
   static async getAllProducts(
@@ -56,6 +57,100 @@ export class ProductController {
       res.status(200).json({
         success: true,
         data: product,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // static async searchProductsByCategory(
+  //   req: Request,
+  //   res: Response,
+  //   next: NextFunction
+  // ): Promise<void> {
+  //   try {
+  //     const { category } = req.params;
+
+  //     let foundCategory = null;
+
+  //     // Check if it's a valid ObjectId or a name
+  //     if (Types.ObjectId.isValid(category)) {
+  //       foundCategory = await Category.findById(category);
+  //     } else {
+  //       foundCategory = await Category.findOne({
+  //         name: { $regex: category, $options: "i" },
+  //       });
+  //     }
+
+  //     if (!foundCategory) {
+  //       res.status(404).json({
+  //         success: false,
+  //         message: `Category '${category}' not found`,
+  //       });
+  //       return;
+  //     }
+
+  //     const products = await Product.find({
+  //       category: foundCategory._id,
+  //     }).populate("category", "name");
+
+  //     res.status(200).json({
+  //       success: true,
+  //       count: products.length,
+  //       category: foundCategory.name,
+  //       data: products,
+  //     });
+  //   } catch (error) {
+  //     next(error);
+  //   }
+  // }
+
+  // search produc by category
+  static async searchProductsByCategory(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const categoryParam = req.params.category;
+
+      // Ensure the param exists
+      if (!categoryParam) {
+        res.status(400).json({
+          success: false,
+          message: "Category parameter is required",
+        });
+        return;
+      }
+
+      let foundCategory = null;
+
+      //  Check if the string looks like a valid ObjectId
+      if (Types.ObjectId.isValid(categoryParam)) {
+        foundCategory = await Category.findById(categoryParam);
+      } else {
+        foundCategory = await Category.findOne({
+          name: { $regex: categoryParam, $options: "i" },
+        });
+      }
+
+      if (!foundCategory) {
+        res.status(404).json({
+          success: false,
+          message: `Category '${categoryParam}' not found`,
+        });
+        return;
+      }
+
+      const products = await Product.find({
+        category: foundCategory._id,
+      }).populate("category", "name");
+
+      res.status(200).json({
+        success: true,
+        count: products.length,
+        category: foundCategory.name,
+        data: products,
       });
     } catch (error) {
       next(error);
@@ -122,6 +217,26 @@ export class ProductController {
         lowStockThreshold,
       } = req.body;
 
+      let categoryId: Types.ObjectId;
+
+      if (Types.ObjectId.isValid(category)) {
+        categoryId = new Types.ObjectId(category as string);
+      } else {
+        const foundCategory = await Category.findOne({
+          name: new RegExp(`^${category}$`, "i"),
+        });
+
+        if (!foundCategory) {
+          res.status(400).json({
+            success: false,
+            message: `Category '${category}' not found. Please create it first.`,
+          });
+          return;
+        }
+
+        categoryId = foundCategory._id as Types.ObjectId;
+      }
+
       // Reconstruct inventory object from flattened fields
       const inventory = {
         quantity: parseInt(quantity),
@@ -155,7 +270,7 @@ export class ProductController {
         name,
         description,
         price,
-        category,
+        category: categoryId,
         inventory,
         images: uploadedImages,
       });

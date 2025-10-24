@@ -14,6 +14,10 @@ productRoutes.post(
 productRoutes.get("/", paginate(Product), ProductController.getAllProducts);
 productRoutes.get("/low-stock", ProductController.getLowStockProducts);
 productRoutes.get("/:id", ProductController.getProductById);
+productRoutes.get(
+  "/category/:category",
+  ProductController.searchProductsByCategory
+);
 productRoutes.patch("/:id", ProductController.updateInventory);
 productRoutes.patch("/:id", ProductController.updateProduct);
 productRoutes.patch("/:id", ProductController.deactivateProduct);
