@@ -159,10 +159,12 @@ export class ProductController {
         images: uploadedImages,
       });
 
+      const populatedProduct = await product.populate({ path: "category" });
+
       res.status(201).json({
         success: true,
         message: "Product created successfully",
-        data: product,
+        data: populatedProduct,
       });
     } catch (error) {
       // Cleanup logic
@@ -367,7 +369,7 @@ export class ProductController {
    * Get low stock products (Admin only)
    */
   static async getLowStockProducts(
-    req: Request,
+    _: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> {

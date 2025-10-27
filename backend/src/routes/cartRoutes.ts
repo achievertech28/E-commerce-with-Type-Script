@@ -5,6 +5,24 @@ import { protect } from "../middleware/authMiddleware.ts";
 
 const cartRouter = Router();
 
-cartRouter.post("/", protect, CartController.addProductToCart);
+cartRouter.post("/add", protect, CartController.addProductToCart);
+cartRouter.get("/", CartController.getCart);
+cartRouter.post(
+  "/increaseQuantity",
+  protect,
+  CartController.increaseProductQuantity
+);
+cartRouter.post(
+  "/decreaseQuantity",
+  protect,
+  CartController.decreaseProductQuantity
+);
+cartRouter.delete(
+  "/removeProduct/:productId",
+  protect,
+  CartController.removeFromCart
+);
+cartRouter.delete("/clear", protect, CartController.clearCart);
+cartRouter.get("/getcartsummary", protect, CartController.getCartSummary);
 
 export default cartRouter;

@@ -1,4 +1,4 @@
-import { Document } from "mongoose";
+import { Document, Types } from "mongoose";
 
 export interface IInventory {
   quantity: number;
@@ -21,7 +21,7 @@ export interface IProduct extends Document {
   slug: string;
   description: string;
   price: number;
-  category: string;
+  category: Types.ObjectId;
   images: IProductImage[];
   isActive: boolean;
   inventory: IInventory;
