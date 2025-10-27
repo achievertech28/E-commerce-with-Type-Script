@@ -3,24 +3,21 @@ import ProductController from "../controlllers/productController.ts";
 import upload from "../middleware/multer.ts";
 import paginate from "../middleware/paginate.ts";
 import Product from "../models/productModel.ts";
+// import { adminOnly } from "../middleware/authMiddleware.ts";
 
-const productRoutes = Router();
+const productRouter = Router();
 
-productRoutes.post(
+productRouter.post(
   "/",
   upload.array("productImages", 10),
   ProductController.createProduct
 );
-productRoutes.get("/", paginate(Product), ProductController.getAllProducts);
-productRoutes.get("/low-stock", ProductController.getLowStockProducts);
-productRoutes.get("/:id", ProductController.getProductById);
-productRoutes.get(
-  "/category/:category",
-  ProductController.searchProductsByCategory
-);
-productRoutes.patch("/:id", ProductController.updateInventory);
-productRoutes.patch("/:id", ProductController.updateProduct);
-productRoutes.patch("/:id", ProductController.deactivateProduct);
-productRoutes.delete("/:id", ProductController.permanentlyDeleteProduct);
+productRouter.get("/", paginate(Product), ProductController.getAllProducts);
+productRouter.get("/low-stock", ProductController.getLowStockProducts);
+productRouter.get("/:id", ProductController.getProductById);
+productRouter.patch("/:id", ProductController.updateInventory);
+productRouter.patch("/:id", ProductController.updateProduct);
+productRouter.patch("/:id", ProductController.deactivateProduct);
+productRouter.delete("/:id", ProductController.permanentlyDeleteProduct);
 
-export default productRoutes;
+export default productRouter;

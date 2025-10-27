@@ -1,14 +1,43 @@
 import { Router } from "express";
+// import {
+//   createCategory,
+//   getAllCategories,
+//   getCategoryBySlug,
+//   getCategoryById,
+//   updateCategory,
+//   toggleCategoryStatus,
+//   deleteCategory,
+//   deleteCategoryImage,
+// } from "../controllers/categoryController.ts";
 import {
-  getCategories,
   createCategory,
+  getAllCategories,
+  getCategoryBySlug,
+  getCategoryById,
+  updateCategory,
+  toggleCategoryStatus,
+  deleteCategory,
+  deleteCategoryImage,
 } from "../controlllers/categoryController.ts";
-import paginate from "../middleware/paginate.ts";
-import Category from "../models/categoryModel.ts";
+import upload from "../middleware/multer.ts";
+import { protect } from "../middleware/authMiddleware.ts";
+// import { adminOnly } from "../middleware/authMiddleware.ts";
 
 const categoryRouter = Router();
 
-categoryRouter.post("/", createCategory);
-categoryRouter.get("/", paginate(Category), getCategories);
+categoryRouter.post("/", upload.single("categoryImage"), createCategory);
+categoryRouter.get("/", getAllCategories);
+categoryRouter.get("/slug/:slug", getCategoryBySlug);
+categoryRouter.get("/:id", getCategoryById);
+
+categoryRouter.patch(
+  "/:id",
+  protect,
+  upload.single("categoryImage"),
+  updateCategory
+);
+categoryRouter.delete("/:id", protect, deleteCategory);
+categoryRouter.delete("/:id/image", protect, deleteCategoryImage);
+categoryRouter.patch("/:id/toggle-status", protect, toggleCategoryStatus);
 
 export default categoryRouter;

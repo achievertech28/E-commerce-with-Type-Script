@@ -12,6 +12,7 @@ import authRouter from "./routes/authRoutes.ts";
 import userRouter from "./routes/userRoutes.ts";
 import productRoutes from "./routes/productRoute.ts";
 import categoryRouter from "./routes/categoryRoutes.ts";
+import cartRouter from "./routes/cartRoutes.ts";
 
 const app = express();
 const PORT = 3000;
@@ -23,7 +24,8 @@ app.use(cookieParser());
 app.use("/api/auth", authRouter);
 app.use("/api/user", protect, userRouter);
 app.use("/api/product", productRoutes);
-app.use("/api/category", categoryRouter);
+app.use("/api/categories", categoryRouter);
+app.use("/api/cart", cartRouter);
 app.get("/", (_: Request, res: Response, next: NextFunction) => {
   res.send("Hello World!");
   next();
