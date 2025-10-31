@@ -13,6 +13,7 @@ import userRouter from "./routes/userRoutes.ts";
 import productRoutes from "./routes/productRoute.ts";
 import categoryRouter from "./routes/categoryRoutes.ts";
 import cartRouter from "./routes/cartRoutes.ts";
+import orderRouter from "./routes/orderRoutes.ts";
 
 const app = express();
 const PORT = 3000;
@@ -26,6 +27,7 @@ app.use("/api/user", protect, userRouter);
 app.use("/api/product", productRoutes);
 app.use("/api/categories", categoryRouter);
 app.use("/api/cart", cartRouter);
+app.use("/api/order", orderRouter);
 app.get("/", (_: Request, res: Response, next: NextFunction) => {
   res.send("Hello World!");
   next();

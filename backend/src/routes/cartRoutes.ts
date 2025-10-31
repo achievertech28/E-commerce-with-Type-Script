@@ -1,12 +1,10 @@
 import { Router } from "express";
 import CartController from "../controlllers/cartController.ts";
 import { protect } from "../middleware/authMiddleware.ts";
-// import { adminOnly } from "../middleware/authMiddleware.ts";
 
 const cartRouter = Router();
 
-cartRouter.post("/add", protect, CartController.addProductToCart);
-cartRouter.get("/", CartController.getCart);
+cartRouter.get("/", protect, CartController.getCart);
 cartRouter.post(
   "/increaseQuantity",
   protect,
@@ -17,12 +15,13 @@ cartRouter.post(
   protect,
   CartController.decreaseProductQuantity
 );
+cartRouter.post("/:productId", protect, CartController.addProductToCart);
 cartRouter.delete(
   "/removeProduct/:productId",
   protect,
-  CartController.removeFromCart
+  CartController.removeProductFromCart
 );
 cartRouter.delete("/clear", protect, CartController.clearCart);
-cartRouter.get("/getcartsummary", protect, CartController.getCartSummary);
+cartRouter.get("/getCartSummary", protect, CartController.getCartSummary);
 
 export default cartRouter;

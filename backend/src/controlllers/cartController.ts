@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import Cart from "../models/cartModel.ts";
 import Product from "../models/productModel.ts";
+// import type { Types } from "mongoose";
 
 export class CartController {
   /**
@@ -36,14 +37,14 @@ export class CartController {
    * Add item to cart
    */
   static async addProductToCart(
-    req: Request,
+    req: Request<{ productId: string }>,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
       const userId = req.user?._id;
 
-      const { productId } = req.body;
+      const { productId } = req.params;
 
       if (!userId) {
         res.status(401);
@@ -87,13 +88,18 @@ export class CartController {
       // Find or create cart
       const cart = await Cart.findOrCreateCart(userId);
 
+      console.log("Returned cart", cart);
+
+      const initialQuantity: number = 1;
+
       // Add item to cart (uses current product price)
-      await cart.addItem(productId, 1, product.price);
+      await cart.addItem(productId, initialQuantity, product.price);
+      console.log("After adding product", cart);
 
       // Populate and return updated cart
       const updatedCart = await Cart.findById(cart._id).populate({
         path: "items.productId",
-        select: "name price slug isActive ",
+        select: "name price slug images inventory isActive ",
       });
 
       res.status(200).json({
@@ -153,6 +159,12 @@ export class CartController {
 
     // Add item to cart (uses current product price)
     await cart.addItem(productId, totalQuantity, product.price);
+
+    res.status(200).json({
+      success: true,
+      message: "Item quantity increased in cart",
+      data: cart,
+    });
   }
 
   static async decreaseProductQuantity(
@@ -188,38 +200,35 @@ export class CartController {
     // Find or create cart
     const cart = await Cart.findOrCreateCart(userId);
 
-    // Get current quantity in cart
+    // Check if adding this quantity would exceed available stock
     const currentQuantityInCart = cart.getItemQuantity(productId);
+    const decreasedQuantity = currentQuantityInCart - 1;
 
-    if (currentQuantityInCart === 0) {
-      res.status(400).json({
-        success: false,
-        message: "Item is not in your cart",
+    if (decreasedQuantity === 0) {
+      // Remove item if quantity drops to zero
+      await cart.removeItem(productId);
+      res.status(200).json({
+        success: true,
+        message: "Item removed from cart",
+        data: cart,
       });
       return;
-    }
-
-    // Decrease quantity
-    const newQuantity = currentQuantityInCart - 1;
-
-    if (newQuantity === 0) {
-      // Remove the item completely if quantity reaches 0
-      await cart.removeItem(productId);
     } else {
-      // Otherwise update the item with new quantity
-      await cart.addItem(productId, newQuantity, product.price);
+      // Add item to cart (uses current product price)
+      await cart.addItem(productId, decreasedQuantity, product.price);
     }
 
     res.status(200).json({
       success: true,
-      message: "Product quantity decreased successfully",
+      message: "Item quantity decreased in cart",
+      data: cart,
     });
   }
 
   /**
    * Remove item from cart
    */
-  static async removeFromCart(
+  static async removeProductFromCart(
     req: Request,
     res: Response,
     next: NextFunction
